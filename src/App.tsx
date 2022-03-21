@@ -1,5 +1,5 @@
 import {
-  Autocomplete, GoogleMap, LoadScript, Marker,
+  GoogleMap, Marker, StandaloneSearchBox, useLoadScript,
 } from '@react-google-maps/api';
 import React from 'react';
 
@@ -15,21 +15,25 @@ const center = {
   lng: 139.77521,
 };
 
-// eslint-disable-next-line no-undef
 const onLoadMacker = (marker: any) => {
   console.log('marker: ', marker);
 };
 
-const onLoadAutoComplate = () => {
+const onLoad = (ref: any) => {
+  console.log(ref);
+};
+
+const onPlacesChanged = () => {
   console.log('a');
 };
 
-const onPlaceChanged = () => {
-  console.log();
-};
+const App: React.FC = () => {
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: API_KEY,
+    libraries: ['places', 'drawing'],
+  });
 
-const App: React.FC = () => (
-  <LoadScript googleMapsApiKey={API_KEY}>
+  const renderMap = () => (
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
@@ -37,9 +41,11 @@ const App: React.FC = () => (
       clickableIcons
       onClick={(e) => console.log(e.latLng?.lat())}
     >
-      {/* <Autocomplete
-        onLoad={onLoadAutoComplate}
-        onPlaceChanged={onPlaceChanged}
+      <StandaloneSearchBox
+        onLoad={onLoad}
+        onPlacesChanged={
+          onPlacesChanged
+        }
       >
         <input
           type="text"
@@ -60,13 +66,19 @@ const App: React.FC = () => (
             marginLeft: '-120px',
           }}
         />
-      </Autocomplete> */}
+      </StandaloneSearchBox>
       <Marker
         onLoad={onLoadMacker}
         position={center}
       />
     </GoogleMap>
-  </LoadScript>
-);
+  );
+
+  if (loadError) {
+    return <div>Map cannot be loaded right now, sorry.</div>;
+  }
+
+  return isLoaded ? renderMap() : <div>Wait a minute...</div>;
+};
 
 export default App;
